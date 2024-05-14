@@ -1,7 +1,6 @@
 import pygame
 from level_data.level_01 import level_01
 
-# make 3 players
 # ling jump
 # other specials
 
@@ -9,7 +8,7 @@ from level_data.level_01 import level_01
 pygame.init()
 
 # screen = pygame.display.set_mode((1280, 720))
-screen = pygame.display.set_mode((1080, 920))
+screen = pygame.display.set_mode((1080, 720))
 clock = pygame.time.Clock()
 running = True
 
@@ -37,6 +36,8 @@ text_surface = my_font.render("Level " + level_01[0][0], False, (155,155,155))
 
 button_list = ["red", "blu", "gre"]
 can_move = ["-  ", "red", "blu", "gre", "roboh"]
+occupied = []
+# cannot_move = ["l  ", "c  ", "p  ", "n  ", "rbh", "robh", "rboh"]
 active_buttons = []
 
 
@@ -86,12 +87,15 @@ for [row_num, row] in enumerate(curr_stage):
       case 'c  ':
         c.set_x(dest[0])
         c.set_y(dest[1])
+        occupied.append([int(c.get_x() / size), int(c.get_y() / size)])
       case 'p  ':
         p.set_x(dest[0])
         p.set_y(dest[1])
+        occupied.append([int(p.get_x() / size), int(p.get_y() / size)])
       case 'n  ':
         n.set_x(dest[0])
         n.set_y(dest[1])
+        occupied.append([int(n.get_x() / size), int(n.get_y() / size)])
 
 if c.is_selected:
   s_p = c
@@ -120,7 +124,10 @@ while running:
         running = False
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_LEFT:
-        if x_int > 0 and curr_stage[y_int][x_int - 1] in can_move:
+        if x_int > 0 and curr_stage[y_int][x_int - 1] in can_move and [x_int - 1, y_int] not in occupied:
+          print([x_int,y_int])
+          occupied.remove([x_int,y_int])
+          occupied.append([x_int - 1,y_int])
           if prev_tile == s_p.get_name() + "  ":
             curr_stage[y_int][x_int] = "-  "
           if prev_tile in button_list:
@@ -129,27 +136,33 @@ while running:
             active_buttons.append(curr_stage[y_int][x_int - 1])
           s_p.set_x(s_p.get_x() - size)
       elif event.key == pygame.K_UP:
-        if prev_tile == s_p.get_name() + "  ":
-          curr_stage[y_int][x_int] = "-  "
-        if y_int > 0 and curr_stage[y_int - 1][x_int] in can_move:
+        if y_int > 0 and curr_stage[y_int - 1][x_int] in can_move and [x_int, y_int - 1] not in occupied:
+          occupied.remove([x_int,y_int])
+          occupied.append([x_int,y_int - 1])
+          if prev_tile == s_p.get_name() + "  ":
+            curr_stage[y_int][x_int] = "-  "
           if prev_tile in button_list:
             active_buttons.remove(prev_tile)
           if curr_stage[y_int - 1][x_int] in button_list:
             active_buttons.append(curr_stage[y_int - 1][x_int])
           s_p.set_y(s_p.get_y() - size)
       elif event.key == pygame.K_RIGHT:
-        if prev_tile == s_p.get_name() + "  ":
-          curr_stage[y_int][x_int] = "-  "
-        if x_int < len(curr_stage[0]) - 1 and curr_stage[y_int][x_int + 1] in can_move:
+        if x_int < len(curr_stage[0]) - 1 and curr_stage[y_int][x_int + 1] in can_move and [x_int + 1, y_int] not in occupied:
+          occupied.remove([x_int,y_int])
+          occupied.append([x_int + 1, y_int])
+          if prev_tile == s_p.get_name() + "  ":
+            curr_stage[y_int][x_int] = "-  "
           if prev_tile in button_list:
             active_buttons.remove(prev_tile)
           if curr_stage[y_int][x_int + 1] in button_list:
             active_buttons.append(curr_stage[y_int][x_int + 1])
           s_p.set_x(s_p.get_x() + size)
       elif event.key == pygame.K_DOWN:
-        if prev_tile == s_p.get_name() + "  ":
-          curr_stage[y_int][x_int] = "-  "
-        if y_int < len(curr_stage) - 1 and curr_stage[y_int + 1][x_int] in can_move:
+        if y_int < len(curr_stage) - 1 and curr_stage[y_int + 1][x_int] in can_move and [x_int, y_int + 1] not in occupied:
+          occupied.remove([x_int,y_int])
+          occupied.append([x_int,y_int + 1])
+          if prev_tile == s_p.get_name() + "  ":
+            curr_stage[y_int][x_int] = "-  "
           if prev_tile in button_list:
             active_buttons.remove(prev_tile)
           if curr_stage[y_int + 1][x_int] in button_list:
@@ -169,7 +182,8 @@ while running:
           c.set_selected(True)
           s_p = c
       elif event.key == pygame.K_a:
-        pass
+        print(occupied)
+        print(curr_level)
 
 
   # screen.blit(floor_tile_01, (0,0))
