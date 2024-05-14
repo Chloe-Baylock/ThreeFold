@@ -25,10 +25,10 @@ chloe_select_img = pygame.image.load('images/chloe_select.png')
 probie_img = pygame.image.load('images/probie.png')
 probie_select_img = pygame.image.load('images/probie_select.png')
 
-rb_horgate = pygame.image.load('images/rb_horgate.png')
-rob_horgate = pygame.image.load('images/rob_horgate.png')
-rbo_horgate = pygame.image.load('images/rbo_horgate.png')
-robo_horgate = pygame.image.load('images/robo_horgate.png')
+rbh = pygame.image.load('images/rb_horgate.png')
+robh = pygame.image.load('images/rob_horgate.png')
+rboh = pygame.image.load('images/rbo_horgate.png')
+roboh = pygame.image.load('images/robo_horgate.png')
 red_button = pygame.image.load('images/red_button.png')
 blue_button = pygame.image.load('images/blue_button.png')
 
@@ -36,14 +36,15 @@ my_font = pygame.font.SysFont("Roboto", 30)
 text_surface = my_font.render("Level " + level_01[0][0], False, (155,155,155))
 
 button_list = ["red", "blu", "gre"]
-can_move = ["-  ", "red", "blu", "gre", "robo"]
+can_move = ["-  ", "red", "blu", "gre", "roboh"]
 active_buttons = []
 
 
 class Player:
-  def __init__(self, x, y, img, selected = False):
+  def __init__(self, x, y, name, img, selected = False):
     self.x = x
     self.y = y
+    self.name = name
     self.selected = selected
     self.img = img
 
@@ -59,20 +60,26 @@ class Player:
   def set_y(self, y):
     self.y = y
 
+  def get_name(self):
+    return self.name
+
   def is_selected(self):
     return self.selected
 
-  def set_selected(self, val):
-    self.selected = val
-  
   def get_img(self):
     return self.img
 
-c = Player(0, 0, chloe_img, True)
-p = Player(size, 0, probie_img, False)
-n = Player(size, size, natalie_img, False)
+  def set_selected(self, val):
+    self.selected = val
 
-for [row_num, row] in enumerate(level_01):
+c = Player(0, 0, "c", chloe_img, True)
+p = Player(size, 0, "p", probie_img, False)
+n = Player(size, size, "n", natalie_img, False)
+
+curr_level = level_01
+curr_stage = curr_level.copy()
+
+for [row_num, row] in enumerate(curr_stage):
   for [col_num, ele] in enumerate(row):
     dest = (col_num * size, row_num * size)
     match ele:
@@ -95,8 +102,8 @@ else:
 
 x_int = int(s_p.get_x() / size)
 y_int = int(s_p.get_y() / size)
-if level_01[y_int][y_int] in button_list:
-  active_buttons.append(level_01[y_int][y_int])
+if curr_stage[y_int][y_int] in button_list:
+  active_buttons.append(curr_stage[y_int][y_int])
 
 
 
@@ -108,44 +115,51 @@ while running:
   for event in pygame.event.get():
     x_int = int(s_p.get_x() / size)
     y_int = int(s_p.get_y() / size)
-    curr_tile = level_01[y_int][x_int]
+    prev_tile = curr_stage[y_int][x_int]
     if event.type == pygame.QUIT:
         running = False
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_LEFT:
-        if x_int > 0 and level_01[y_int][x_int - 1] in can_move:
-          if curr_tile in button_list:
-            active_buttons.remove(curr_tile)
-          if level_01[y_int][x_int - 1] in button_list:
-            active_buttons.append(level_01[y_int][x_int - 1])
+        if x_int > 0 and curr_stage[y_int][x_int - 1] in can_move:
+          if prev_tile == s_p.get_name() + "  ":
+            curr_stage[y_int][x_int] = "-  "
+          if prev_tile in button_list:
+            active_buttons.remove(prev_tile)
+          if curr_stage[y_int][x_int - 1] in button_list:
+            active_buttons.append(curr_stage[y_int][x_int - 1])
           s_p.set_x(s_p.get_x() - size)
       elif event.key == pygame.K_UP:
-        if y_int > 0 and level_01[y_int - 1][x_int] in can_move:
-          if curr_tile in button_list:
-            active_buttons.remove(curr_tile)
-          if level_01[y_int - 1][x_int] in button_list:
-            active_buttons.append(level_01[y_int - 1][x_int])
+        if prev_tile == s_p.get_name() + "  ":
+          curr_stage[y_int][x_int] = "-  "
+        if y_int > 0 and curr_stage[y_int - 1][x_int] in can_move:
+          if prev_tile in button_list:
+            active_buttons.remove(prev_tile)
+          if curr_stage[y_int - 1][x_int] in button_list:
+            active_buttons.append(curr_stage[y_int - 1][x_int])
           s_p.set_y(s_p.get_y() - size)
       elif event.key == pygame.K_RIGHT:
-        if x_int < len(level_01[0]) - 1 and level_01[y_int][x_int + 1] in can_move:
-          if curr_tile in button_list:
-            active_buttons.remove(curr_tile)
-          if level_01[y_int][x_int + 1] in button_list:
-            active_buttons.append(level_01[y_int][x_int + 1])
+        if prev_tile == s_p.get_name() + "  ":
+          curr_stage[y_int][x_int] = "-  "
+        if x_int < len(curr_stage[0]) - 1 and curr_stage[y_int][x_int + 1] in can_move:
+          if prev_tile in button_list:
+            active_buttons.remove(prev_tile)
+          if curr_stage[y_int][x_int + 1] in button_list:
+            active_buttons.append(curr_stage[y_int][x_int + 1])
           s_p.set_x(s_p.get_x() + size)
       elif event.key == pygame.K_DOWN:
-        if y_int < len(level_01) - 1 and level_01[y_int + 1][x_int] in can_move:
-          if curr_tile in button_list:
-            active_buttons.remove(curr_tile)
-          if level_01[y_int + 1][x_int] in button_list:
-            active_buttons.append(level_01[y_int + 1][x_int])
+        if prev_tile == s_p.get_name() + "  ":
+          curr_stage[y_int][x_int] = "-  "
+        if y_int < len(curr_stage) - 1 and curr_stage[y_int + 1][x_int] in can_move:
+          if prev_tile in button_list:
+            active_buttons.remove(prev_tile)
+          if curr_stage[y_int + 1][x_int] in button_list:
+            active_buttons.append(curr_stage[y_int + 1][x_int])
           s_p.set_y(s_p.get_y() + size)
       elif event.key == pygame.K_LCTRL:
         if c.is_selected():
           c.set_selected(False)
           p.set_selected(True)
           s_p = p
-          print('probie selected')
         elif p.is_selected():
           p.set_selected(False)
           n.set_selected(True)
@@ -155,10 +169,7 @@ while running:
           c.set_selected(True)
           s_p = c
       elif event.key == pygame.K_a:
-        print(c.is_selected())
-        print(p.is_selected())
-        print(n.is_selected())
-        print('--')
+        pass
 
 
   # screen.blit(floor_tile_01, (0,0))
@@ -167,7 +178,7 @@ while running:
 
   # RENDER YOUR GAME HERE
 
-  for [row_num, row] in enumerate(level_01):
+  for [row_num, row] in enumerate(curr_stage):
     for [col_num, ele] in enumerate(row):
       dest = (col_num * size, row_num * size)
       match ele:
@@ -185,25 +196,28 @@ while running:
           screen.blit(red_button, dest)
         case 'blu':
           screen.blit(blue_button, dest)
-        case 'RBh':
+        case 'rbh' | 'robh' | 'rboh' | 'roboh':
           if "red" in active_buttons and "blu" in active_buttons:
-            screen.blit(robo_horgate, dest)
+            curr_stage[row_num][col_num] = 'roboh'
+            screen.blit(roboh, dest)
           elif "red" in active_buttons:
-            screen.blit(rob_horgate, dest)
+            curr_stage[row_num][col_num] = 'robh'
+            screen.blit(robh, dest)
           elif "blu" in active_buttons:
-            screen.blit(rbo_horgate, dest)
+            curr_stage[row_num][col_num] = 'rboh'
+            screen.blit(rboh, dest)
           else:
-            screen.blit(rb_horgate, dest)
+            curr_stage[row_num][col_num] = 'rbh'
+            screen.blit(rbh, dest)
 
 
-  # text_surface = my_font.render("Level " + level_01[0][2], False, (155,155,155))
+  # text_surface = my_font.render("Level " + curr_level[0][2], False, (155,155,155))
   # screen.blit(text_surface, (64,64))
 
 
   screen.blit(c.get_img(), (c.get_x(),c.get_y()))
   screen.blit(p.get_img(), (p.get_x(),p.get_y()))
   screen.blit(n.get_img(), (n.get_x(),n.get_y()))
-  # pygame.draw.rect(screen, "lime", (s_p.get_x(),s_p.get_y(),size,size))
 
 
 
