@@ -36,14 +36,16 @@ my_font = pygame.font.SysFont("Roboto", 30)
 text_surface = my_font.render("Level " + level_01[0][0], False, (155,155,155))
 
 button_list = ["red", "blu", "gre"]
-can_move = ["-  ", "red", "blu", "gre"]
+can_move = ["-  ", "red", "blu", "gre", "robo"]
 active_buttons = []
 
 
 class Player:
-  def __init__(self, x, y):
+  def __init__(self, x, y, img, selected = False):
     self.x = x
     self.y = y
+    self.selected = selected
+    self.img = img
 
   def get_x(self):
     return self.x
@@ -57,10 +59,42 @@ class Player:
   def set_y(self, y):
     self.y = y
 
+  def is_selected(self):
+    return self.selected
 
-p = Player(size,size)
-x_int = int(p.get_x() / size)
-y_int = int(p.get_y() / size)
+  def set_selected(self, val):
+    self.selected = val
+  
+  def get_img(self):
+    return self.img
+
+c = Player(0, 0, chloe_img, True)
+p = Player(size, 0, probie_img, False)
+n = Player(size, size, natalie_img, False)
+
+for [row_num, row] in enumerate(level_01):
+  for [col_num, ele] in enumerate(row):
+    dest = (col_num * size, row_num * size)
+    match ele:
+      case 'c  ':
+        c.set_x(dest[0])
+        c.set_y(dest[1])
+      case 'p  ':
+        p.set_x(dest[0])
+        p.set_y(dest[1])
+      case 'n  ':
+        n.set_x(dest[0])
+        n.set_y(dest[1])
+
+if c.is_selected:
+  s_p = c
+elif p.is_selected:
+  s_p = p
+else:
+  s_p = n
+
+x_int = int(s_p.get_x() / size)
+y_int = int(s_p.get_y() / size)
 if level_01[y_int][y_int] in button_list:
   active_buttons.append(level_01[y_int][y_int])
 
@@ -72,8 +106,8 @@ while running:
 
 
   for event in pygame.event.get():
-    x_int = int(p.get_x() / size)
-    y_int = int(p.get_y() / size)
+    x_int = int(s_p.get_x() / size)
+    y_int = int(s_p.get_y() / size)
     curr_tile = level_01[y_int][x_int]
     if event.type == pygame.QUIT:
         running = False
@@ -84,30 +118,47 @@ while running:
             active_buttons.remove(curr_tile)
           if level_01[y_int][x_int - 1] in button_list:
             active_buttons.append(level_01[y_int][x_int - 1])
-          p.set_x(p.get_x() - size)
+          s_p.set_x(s_p.get_x() - size)
       elif event.key == pygame.K_UP:
         if y_int > 0 and level_01[y_int - 1][x_int] in can_move:
           if curr_tile in button_list:
             active_buttons.remove(curr_tile)
           if level_01[y_int - 1][x_int] in button_list:
             active_buttons.append(level_01[y_int - 1][x_int])
-          p.set_y(p.get_y() - size)
+          s_p.set_y(s_p.get_y() - size)
       elif event.key == pygame.K_RIGHT:
         if x_int < len(level_01[0]) - 1 and level_01[y_int][x_int + 1] in can_move:
           if curr_tile in button_list:
             active_buttons.remove(curr_tile)
           if level_01[y_int][x_int + 1] in button_list:
             active_buttons.append(level_01[y_int][x_int + 1])
-          p.set_x(p.get_x() + size)
+          s_p.set_x(s_p.get_x() + size)
       elif event.key == pygame.K_DOWN:
         if y_int < len(level_01) - 1 and level_01[y_int + 1][x_int] in can_move:
           if curr_tile in button_list:
             active_buttons.remove(curr_tile)
           if level_01[y_int + 1][x_int] in button_list:
             active_buttons.append(level_01[y_int + 1][x_int])
-          p.set_y(p.get_y() + size)
+          s_p.set_y(s_p.get_y() + size)
+      elif event.key == pygame.K_LCTRL:
+        if c.is_selected():
+          c.set_selected(False)
+          p.set_selected(True)
+          s_p = p
+          print('probie selected')
+        elif p.is_selected():
+          p.set_selected(False)
+          n.set_selected(True)
+          s_p = n
+        else:
+          n.set_selected(False)
+          c.set_selected(True)
+          s_p = c
       elif event.key == pygame.K_a:
-        print(active_buttons)
+        print(c.is_selected())
+        print(p.is_selected())
+        print(n.is_selected())
+        print('--')
 
 
   # screen.blit(floor_tile_01, (0,0))
@@ -125,11 +176,11 @@ while running:
         case 'l  ':
           screen.blit(wall, dest)
         case 'c  ':
-          screen.blit(chloe_img, dest)
+          screen.blit(floor, dest)
         case 'p  ':
-          screen.blit(probie_img, dest)
+          screen.blit(floor, dest)
         case 'n  ':
-          screen.blit(natalie_img, dest)
+          screen.blit(floor, dest)
         case 'red':
           screen.blit(red_button, dest)
         case 'blu':
@@ -149,8 +200,10 @@ while running:
   # screen.blit(text_surface, (64,64))
 
 
-  
-  pygame.draw.rect(screen, "lime", (p.get_x(),p.get_y(),size,size))
+  screen.blit(c.get_img(), (c.get_x(),c.get_y()))
+  screen.blit(p.get_img(), (p.get_x(),p.get_y()))
+  screen.blit(n.get_img(), (n.get_x(),n.get_y()))
+  # pygame.draw.rect(screen, "lime", (s_p.get_x(),s_p.get_y(),size,size))
 
 
 
