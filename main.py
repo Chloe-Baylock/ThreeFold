@@ -106,8 +106,8 @@ else:
 
 x_int = int(s_p.get_x() / size)
 y_int = int(s_p.get_y() / size)
-if curr_stage[y_int][y_int] in button_list:
-  active_buttons.append(curr_stage[y_int][y_int])
+if curr_stage[y_int][x_int] in button_list:
+  active_buttons.append(curr_stage[y_int][x_int])
 
 
 
