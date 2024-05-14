@@ -42,12 +42,13 @@ active_buttons = []
 
 
 class Player:
-  def __init__(self, x, y, name, img, selected = False):
+  def __init__(self, x, y, name, img, selec_img, selected = False):
     self.x = x
     self.y = y
     self.name = name
-    self.selected = selected
     self.img = img
+    self.selec_img = selec_img
+    self.selected = selected
 
   def get_x(self):
     return self.x
@@ -68,14 +69,17 @@ class Player:
     return self.selected
 
   def get_img(self):
-    return self.img
+    if self.is_selected():
+      return self.selec_img
+    else:
+      return self.img
 
   def set_selected(self, val):
     self.selected = val
 
-c = Player(0, 0, "c", chloe_img, True)
-p = Player(size, 0, "p", probie_img, False)
-n = Player(size, size, "n", natalie_img, False)
+c = Player(0, 0, "c", chloe_img, chloe_select_img, True)
+p = Player(size, 0, "p", probie_img, probie_select_img, False)
+n = Player(size, size, "n", natalie_img, natalie_select_img, False)
 
 curr_level = level_01
 curr_stage = curr_level.copy()
@@ -125,7 +129,6 @@ while running:
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_LEFT:
         if x_int > 0 and curr_stage[y_int][x_int - 1] in can_move and [x_int - 1, y_int] not in occupied:
-          print([x_int,y_int])
           occupied.remove([x_int,y_int])
           occupied.append([x_int - 1,y_int])
           if prev_tile == s_p.get_name() + "  ":
