@@ -2,7 +2,17 @@ import pygame
 from level_data.level_01 import level_01
 
 # ling jump
-# other specials
+# chloe box
+# probie swap
+# probie fling
+# special rotation
+# add more gates
+# make some levels
+# redo player sprites
+# level select
+# main menu
+# level editor
+# sound effects
 
 # pygame setup
 pygame.init()
