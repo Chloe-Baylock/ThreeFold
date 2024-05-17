@@ -3,7 +3,7 @@ from level_data.level_01 import level_01
 
 # things to fix marked with xxxx
 
-# chloe box
+# chloe push box
 # probie swap
 # probie fling
 # special rotation
@@ -57,7 +57,12 @@ move_val = 1
 
 
 def can_move_to (move_x, move_y):
-  return curr_stage[move_y][move_x] in can_move and [move_x, move_y] not in occupied
+  if curr_stage[move_y][move_x] in can_move and [move_x, move_y] not in occupied:
+    return "true"
+  elif box.get_x() == move_x and box.get_y() == move_y:
+    return "push box"
+  else:
+    return "false"
 
 # prev x and y are where we started
 # curr x and y are where we end up
@@ -79,11 +84,30 @@ def movement(prev_x, prev_y, curr_x, curr_y):
     box.set_y(curr_y)
     box.set_placed(True)
     c.set_has_box(False)
+    occupied.append([curr_x, curr_y])
   else:
     s_p.set_x(curr_x)
     s_p.set_y(curr_y)
   n.set_ling_jump(False)
   c.set_placing_box(False)
+
+def chloe_push(dest_x, dest_y):
+  print("in chloe push")
+  if curr_stage[c.get_y()][c.get_x()] in button_list:
+    active_buttons.remove(curr_stage[c.get_y()][c.get_x()])
+  if curr_stage[dest_y][dest_x] in button_list:
+    active_buttons.append(curr_stage[dest_y][dest_x])
+  occupied.remove([c.get_x(), c.get_y()])
+  occupied.append([dest_x, dest_y])
+
+  c.set_x(box.get_x())
+  c.set_y(box.get_y())
+  box.set_x(dest_x)
+  box.set_y(dest_y)
+  n.set_ling_jump(False)
+  c.set_placing_box(False)
+
+
 
 
 class Player:
@@ -228,17 +252,25 @@ while running:
         running = False
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_LEFT:
-        if x_int > move_val - 1 and can_move_to(x_int - move_val, y_int):
+        if x_int > move_val - 1 and can_move_to(x_int - move_val, y_int) == 'true':
           movement(x_int, y_int, x_int - move_val, y_int)
+        elif x_int > move_val - 2 and can_move_to(x_int - move_val, y_int) == 'push box':
+          chloe_push(x_int - 2, y_int) 
       elif event.key == pygame.K_UP:
-        if y_int > move_val - 1 and can_move_to(x_int, y_int - move_val):
+        if y_int > move_val - 1 and can_move_to(x_int, y_int - move_val) == 'true':
           movement(x_int, y_int, x_int, y_int - move_val)
+        elif y_int > move_val - 2 and can_move_to(x_int, y_int - move_val) == 'push box':
+          chloe_push(x_int, y_int - 2) 
       elif event.key == pygame.K_RIGHT:
-        if x_int < len(curr_stage[0]) - move_val and can_move_to(x_int + move_val, y_int):
+        if x_int < len(curr_stage[0]) - move_val and can_move_to(x_int + move_val, y_int) == 'true':
           movement(x_int, y_int, x_int + move_val, y_int)
+        elif x_int < len(curr_stage[0]) - 2 and can_move_to(x_int + move_val, y_int) == 'push box':
+          chloe_push(x_int + 2, y_int) 
       elif event.key == pygame.K_DOWN:
-        if y_int < len(curr_stage) - move_val and can_move_to(x_int,y_int + move_val):
+        if y_int < len(curr_stage) - move_val and can_move_to(x_int, y_int + move_val) == 'true':
           movement(x_int, y_int, x_int, y_int + move_val)
+        elif y_int < len(curr_stage) - 2 and can_move_to(x_int, y_int + move_val) == "push box":
+          chloe_push(x_int, y_int + 2) 
       elif event.key == pygame.K_LCTRL:
         if c.is_selected():
           c.set_selected(False)
@@ -259,7 +291,6 @@ while running:
           n.set_ling_jump(not n.is_ling_jump())
         elif c.is_selected() and c.has_box():
           c.set_placing_box(not c.is_placing_box())
-          # print(c.is_placing_box())
       elif event.key == pygame.K_r:
         pass
       elif event.key == pygame.K_a:
