@@ -1,6 +1,8 @@
 import pygame
 from level_data.level_01 import level_01
 
+# things to fix marked with xxxx
+
 # chloe box
 # probie swap
 # probie fling
@@ -46,7 +48,6 @@ text_surface = my_font.render("Level " + level_01[0][0], False, (155,155,155))
 button_list = ["red", "blu", "gre"]
 can_move = ["-  ", "red", "blu", "gre", "roboh"]
 occupied = []
-# cannot_move = ["l  ", "c  ", "p  ", "n  ", "rbh", "robh", "rboh"]
 active_buttons = []
 
 ling_jump = False
@@ -55,6 +56,26 @@ move_val = 1
 
 def can_move_to (move_x, move_y):
   return curr_stage[move_y][move_x] in can_move and [move_x, move_y] not in occupied
+
+# prev x and y are where we started
+# curr x and y are where we end up
+def movement(prev_x, prev_y, curr_x, curr_y):
+  occupied.remove([prev_x, prev_y])
+  occupied.append([curr_x, curr_y])
+  # track all tiles that have a player type thing on them
+
+  # weird, want to fix this xxxx
+  prev_tile = curr_stage[prev_y][prev_x]
+  if prev_tile == s_p.get_name() + "  ":
+    curr_stage[prev_y][prev_x] = "-  "
+  if prev_tile in button_list:
+    active_buttons.remove(prev_tile)
+  if curr_stage[curr_y][curr_x] in button_list:
+    active_buttons.append(curr_stage[curr_y][curr_x])
+  # update which buttons are held
+  
+  # ling_jump = False
+
 
 class Player:
   def __init__(self, x, y, name, img, selec_img, selected = False):
@@ -147,50 +168,22 @@ while running:
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_LEFT:
         if x_int > move_val - 1 and can_move_to(x_int - move_val, y_int):
-          occupied.remove([x_int,y_int])
-          occupied.append([x_int - move_val,y_int])
-          if prev_tile == s_p.get_name() + "  ":
-            curr_stage[y_int][x_int] = "-  "
-          if prev_tile in button_list:
-            active_buttons.remove(prev_tile)
-          if curr_stage[y_int][x_int - move_val] in button_list:
-            active_buttons.append(curr_stage[y_int][x_int - move_val])
+          movement(x_int, y_int, x_int - move_val, y_int)
           s_p.set_x(s_p.get_x() - move_val)
           ling_jump = False
       elif event.key == pygame.K_UP:
         if y_int > move_val - 1 and can_move_to(x_int, y_int - move_val):
-          occupied.remove([x_int,y_int])
-          occupied.append([x_int,y_int - move_val])
-          if prev_tile == s_p.get_name() + "  ":
-            curr_stage[y_int][x_int] = "-  "
-          if prev_tile in button_list:
-            active_buttons.remove(prev_tile)
-          if curr_stage[y_int - move_val][x_int] in button_list:
-            active_buttons.append(curr_stage[y_int - move_val][x_int])
+          movement(x_int, y_int, x_int, y_int - move_val)
           s_p.set_y(s_p.get_y() - move_val)
           ling_jump = False
       elif event.key == pygame.K_RIGHT:
         if x_int < len(curr_stage[0]) - move_val and can_move_to(x_int + move_val, y_int):
-          occupied.remove([x_int,y_int])
-          occupied.append([x_int + move_val, y_int])
-          if prev_tile == s_p.get_name() + "  ":
-            curr_stage[y_int][x_int] = "-  "
-          if prev_tile in button_list:
-            active_buttons.remove(prev_tile)
-          if curr_stage[y_int][x_int + move_val] in button_list:
-            active_buttons.append(curr_stage[y_int][x_int + move_val])
+          movement(x_int, y_int, x_int + move_val, y_int)
           s_p.set_x(s_p.get_x() + move_val)
           ling_jump = False
       elif event.key == pygame.K_DOWN:
         if y_int < len(curr_stage) - move_val and can_move_to(x_int,y_int + move_val):
-          occupied.remove([x_int,y_int])
-          occupied.append([x_int,y_int + move_val])
-          if prev_tile == s_p.get_name() + "  ":
-            curr_stage[y_int][x_int] = "-  "
-          if prev_tile in button_list:
-            active_buttons.remove(prev_tile)
-          if curr_stage[y_int + move_val][x_int] in button_list:
-            active_buttons.append(curr_stage[y_int + move_val][x_int])
+          movement(x_int, y_int, x_int, y_int + move_val)
           s_p.set_y(s_p.get_y() + move_val)
           ling_jump = False
       elif event.key == pygame.K_LCTRL:
@@ -210,18 +203,8 @@ while running:
       elif event.key == pygame.K_k:
         if n.is_selected():
           ling_jump = not ling_jump
-          # if s_p.get_x() > 1 and can_move_to(x_int -2, y_int):
-          #   occupied.remove([x_int, y_int])
-          #   occupied.append([x_int - 2, y_int])
-          #   if prev_tile == s_p.get_name() + "  ":
-          #     curr_stage[y_int][x_int] = "-  "
-          #   if prev_tile in button_list:
-          #     active_buttons.remove(prev_tile)
-          #   if curr_stage[y_int][x_int - 2] in button_list:
-          #     active_buttons.append(curr_stage[y_int][x_int - 2])
-          #   s_p.set_x(s_p.get_x() - 2)
       elif event.key == pygame.K_a:
-        print(ling_jump)
+        print(active_buttons)
 
 
   # screen.blit(floor_tile_01, (0,0))
