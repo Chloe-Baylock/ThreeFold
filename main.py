@@ -50,7 +50,6 @@ can_move = ["-  ", "red", "blu", "gre", "roboh"]
 occupied = []
 active_buttons = []
 
-ling_jump = False
 move_val = 1
 
 
@@ -73,8 +72,7 @@ def movement(prev_x, prev_y, curr_x, curr_y):
   if curr_stage[curr_y][curr_x] in button_list:
     active_buttons.append(curr_stage[curr_y][curr_x])
   # update which buttons are held
-  
-  # ling_jump = False
+  n.set_ling_jump(False)
 
 
 class Player:
@@ -85,6 +83,7 @@ class Player:
     self.img = img
     self.selec_img = selec_img
     self.selected = selected
+    self.ling_jump = False
 
   def get_x(self):
     return self.x
@@ -112,6 +111,12 @@ class Player:
 
   def set_selected(self, val):
     self.selected = val
+
+  def is_ling_jump(self):
+    return self.ling_jump
+
+  def set_ling_jump(self, val):
+    self.ling_jump = val
 
 c = Player(0, 0, "c", chloe_img, chloe_select_img, True)
 p = Player(1, 0, "p", probie_img, probie_select_img, False)
@@ -158,7 +163,7 @@ while running:
   for event in pygame.event.get():
     x_int = s_p.get_x()
     y_int = s_p.get_y()
-    if ling_jump:
+    if s_p.is_ling_jump():
       move_val = 2
     else:
       move_val = 1
@@ -170,22 +175,18 @@ while running:
         if x_int > move_val - 1 and can_move_to(x_int - move_val, y_int):
           movement(x_int, y_int, x_int - move_val, y_int)
           s_p.set_x(s_p.get_x() - move_val)
-          ling_jump = False
       elif event.key == pygame.K_UP:
         if y_int > move_val - 1 and can_move_to(x_int, y_int - move_val):
           movement(x_int, y_int, x_int, y_int - move_val)
           s_p.set_y(s_p.get_y() - move_val)
-          ling_jump = False
       elif event.key == pygame.K_RIGHT:
         if x_int < len(curr_stage[0]) - move_val and can_move_to(x_int + move_val, y_int):
           movement(x_int, y_int, x_int + move_val, y_int)
           s_p.set_x(s_p.get_x() + move_val)
-          ling_jump = False
       elif event.key == pygame.K_DOWN:
         if y_int < len(curr_stage) - move_val and can_move_to(x_int,y_int + move_val):
           movement(x_int, y_int, x_int, y_int + move_val)
           s_p.set_y(s_p.get_y() + move_val)
-          ling_jump = False
       elif event.key == pygame.K_LCTRL:
         if c.is_selected():
           c.set_selected(False)
@@ -199,12 +200,11 @@ while running:
           n.set_selected(False)
           c.set_selected(True)
           s_p = c
-          ling_jump = False
       elif event.key == pygame.K_k:
         if n.is_selected():
-          ling_jump = not ling_jump
+          s_p.set_ling_jump(not s_p.is_ling_jump())
       elif event.key == pygame.K_a:
-        print(active_buttons)
+        print(n.ling_jump)
 
 
   # screen.blit(floor_tile_01, (0,0))
