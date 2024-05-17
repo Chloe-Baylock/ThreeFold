@@ -30,8 +30,11 @@ floor = pygame.image.load('images/floor.png')
 
 natalie_img = pygame.image.load('images/natalie.png')
 natalie_select_img = pygame.image.load('images/natalie_select.png')
+natalie_ling_img = pygame.image.load('images/natalie_ling.png')
 chloe_img = pygame.image.load('images/chloe.png')
 chloe_select_img = pygame.image.load('images/chloe_select.png')
+chloe_box_img = pygame.image.load('images/chloe_box.png')
+box_img = pygame.image.load('images/box.png')
 probie_img = pygame.image.load('images/probie.png')
 probie_select_img = pygame.image.load('images/probie_select.png')
 
@@ -59,24 +62,32 @@ def can_move_to (move_x, move_y):
 # prev x and y are where we started
 # curr x and y are where we end up
 def movement(prev_x, prev_y, curr_x, curr_y):
-  occupied.remove([prev_x, prev_y])
+  
+  if not s_p.is_placing_box():
+    occupied.remove([prev_x, prev_y])
   occupied.append([curr_x, curr_y])
-  # track all tiles that have a player type thing on them
+  # track all tiles that have a player or box on them
 
-  # weird, want to fix this xxxx
   prev_tile = curr_stage[prev_y][prev_x]
-  if prev_tile == s_p.get_name() + "  ":
-    curr_stage[prev_y][prev_x] = "-  "
-  if prev_tile in button_list:
+  if prev_tile in button_list and not s_p.is_placing_box():
     active_buttons.remove(prev_tile)
   if curr_stage[curr_y][curr_x] in button_list:
     active_buttons.append(curr_stage[curr_y][curr_x])
   # update which buttons are held
+  if s_p.is_placing_box():
+    box.set_x(curr_x)
+    box.set_y(curr_y)
+    box.set_placed(True)
+    c.set_has_box(False)
+  else:
+    s_p.set_x(curr_x)
+    s_p.set_y(curr_y)
   n.set_ling_jump(False)
+  c.set_placing_box(False)
 
 
 class Player:
-  def __init__(self, x, y, name, img, selec_img, selected = False):
+  def __init__(self, x, y, name, box, img, selec_img, selected = False):
     self.x = x
     self.y = y
     self.name = name
@@ -84,6 +95,8 @@ class Player:
     self.selec_img = selec_img
     self.selected = selected
     self.ling_jump = False
+    self.box = box
+    self.placing_box = False
 
   def get_x(self):
     return self.x
@@ -105,7 +118,12 @@ class Player:
 
   def get_img(self):
     if self.is_selected():
-      return self.selec_img
+      if self.is_ling_jump():
+        return natalie_ling_img
+      if self.is_placing_box():
+        return chloe_box_img
+      else:
+        return self.selec_img
     else:
       return self.img
 
@@ -118,9 +136,43 @@ class Player:
   def set_ling_jump(self, val):
     self.ling_jump = val
 
-c = Player(0, 0, "c", chloe_img, chloe_select_img, True)
-p = Player(1, 0, "p", probie_img, probie_select_img, False)
-n = Player(1, 1, "n", natalie_img, natalie_select_img, False)
+  def has_box(self):
+    return self.box
+  
+  def set_has_box(self, val):
+    self.box = val
+  
+  def is_placing_box(self):
+    return self.placing_box
+  
+  def set_placing_box(self, val):
+    self.placing_box = val
+
+class Box:
+  def __init__ (self, x, y, placed = False):
+    self.x = x
+    self.y = y
+    self.placed = placed
+
+  def get_x(self):
+    return self.x
+  def set_x(self, val):
+    self.x = val
+  def get_y(self):
+    return self.y
+  def set_y(self, val):
+    self.y = val
+  def is_placed(self):
+    return self.placed
+  def set_placed(self, val):
+    self.placed = val
+
+
+
+c = Player(0, 0, "c", True, chloe_img, chloe_select_img, True)
+p = Player(1, 0, "p", False, probie_img, probie_select_img, False)
+n = Player(1, 1, "n", False, natalie_img, natalie_select_img, False)
+box = Box(0, 0)
 
 curr_level = level_01
 curr_stage = curr_level.copy()
@@ -133,14 +185,17 @@ for [row_num, row] in enumerate(curr_stage):
         c.set_x(dest[0])
         c.set_y(dest[1])
         occupied.append([c.get_x(), c.get_y()])
+        curr_stage[row_num][col_num] = '-  '
       case 'p  ':
         p.set_x(dest[0])
         p.set_y(dest[1])
         occupied.append([p.get_x(), p.get_y()])
+        curr_stage[row_num][col_num] = '-  '
       case 'n  ':
         n.set_x(dest[0])
         n.set_y(dest[1])
         occupied.append([n.get_x(), n.get_y()])
+        curr_stage[row_num][col_num] = '-  '
 
 if c.is_selected:
   s_p = c
@@ -168,25 +223,22 @@ while running:
     else:
       move_val = 1
     prev_tile = curr_stage[y_int][x_int]
+
     if event.type == pygame.QUIT:
         running = False
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_LEFT:
         if x_int > move_val - 1 and can_move_to(x_int - move_val, y_int):
           movement(x_int, y_int, x_int - move_val, y_int)
-          s_p.set_x(s_p.get_x() - move_val)
       elif event.key == pygame.K_UP:
         if y_int > move_val - 1 and can_move_to(x_int, y_int - move_val):
           movement(x_int, y_int, x_int, y_int - move_val)
-          s_p.set_y(s_p.get_y() - move_val)
       elif event.key == pygame.K_RIGHT:
         if x_int < len(curr_stage[0]) - move_val and can_move_to(x_int + move_val, y_int):
           movement(x_int, y_int, x_int + move_val, y_int)
-          s_p.set_x(s_p.get_x() + move_val)
       elif event.key == pygame.K_DOWN:
         if y_int < len(curr_stage) - move_val and can_move_to(x_int,y_int + move_val):
           movement(x_int, y_int, x_int, y_int + move_val)
-          s_p.set_y(s_p.get_y() + move_val)
       elif event.key == pygame.K_LCTRL:
         if c.is_selected():
           c.set_selected(False)
@@ -200,11 +252,18 @@ while running:
           n.set_selected(False)
           c.set_selected(True)
           s_p = c
+        n.set_ling_jump(False)
+        c.set_placing_box(False)
       elif event.key == pygame.K_k:
         if n.is_selected():
-          s_p.set_ling_jump(not s_p.is_ling_jump())
+          n.set_ling_jump(not n.is_ling_jump())
+        elif c.is_selected() and c.has_box():
+          c.set_placing_box(not c.is_placing_box())
+          # print(c.is_placing_box())
+      elif event.key == pygame.K_r:
+        pass
       elif event.key == pygame.K_a:
-        print(n.ling_jump)
+        print(c.has_box())
 
 
   # screen.blit(floor_tile_01, (0,0))
@@ -248,9 +307,11 @@ while running:
 
 
 
-  screen.blit(c.get_img(), (c.get_x() * size,c.get_y() * size))
-  screen.blit(p.get_img(), (p.get_x() * size,p.get_y() * size))
-  screen.blit(n.get_img(), (n.get_x() * size,n.get_y() * size))
+  screen.blit(c.get_img(), (c.get_x() * size, c.get_y() * size))
+  screen.blit(p.get_img(), (p.get_x() * size, p.get_y() * size))
+  screen.blit(n.get_img(), (n.get_x() * size, n.get_y() * size))
+  if box.is_placed():
+    screen.blit(box_img, (box.get_x() * size, box.get_y() * size))
 
 
 
