@@ -3,8 +3,9 @@ from level_data.level_01 import level_01
 
 # things to fix marked with xxxx
 
-# probie swap
-# probie fling
+
+# probie move
+# probie move animation
 # special rotation
 # add more gates
 # make some levels
@@ -27,15 +28,16 @@ size = 48
 wall = pygame.image.load('images/wall.png')
 floor = pygame.image.load('images/floor.png')
 
-natalie_img = pygame.image.load('images/natalie.png')
-natalie_select_img = pygame.image.load('images/natalie_select.png')
-natalie_ling_img = pygame.image.load('images/natalie_ling.png')
-chloe_img = pygame.image.load('images/chloe.png')
-chloe_select_img = pygame.image.load('images/chloe_select.png')
-chloe_box_img = pygame.image.load('images/chloe_box.png')
-box_img = pygame.image.load('images/box.png')
-probie_img = pygame.image.load('images/probie.png')
-probie_select_img = pygame.image.load('images/probie_select.png')
+natalie_img = pygame.image.load('images/player/natalie.png')
+natalie_select_img = pygame.image.load('images/player/natalie_select.png')
+natalie_ling_img = pygame.image.load('images/player/natalie_ling.png')
+chloe_img = pygame.image.load('images/player/chloe.png')
+chloe_select_img = pygame.image.load('images/player/chloe_select.png')
+chloe_box_img = pygame.image.load('images/player/chloe_box.png')
+box_img = pygame.image.load('images/player/box.png')
+probie_img = pygame.image.load('images/player/probie.png')
+probie_select_img = pygame.image.load('images/player/probie_select.png')
+baby_img = pygame.image.load('images/player/baby.png')
 
 rbh = pygame.image.load('images/rb_horgate.png')
 robh = pygame.image.load('images/rob_horgate.png')
@@ -54,8 +56,11 @@ active_buttons = []
 
 move_val = 1
 
+def is_in_bounds(x,y):
+  return x >= 0 and y >= 0 and x < len(curr_stage[0]) and y < len(curr_stage)
 
-def can_move_to (move_x, move_y):
+
+def can_move_to(move_x, move_y):
   if curr_stage[move_y][move_x] in can_move and [move_x, move_y] not in occupied:
     return "true"
   elif c.is_selected() and box.get_x() == move_x and box.get_y() == move_y:
@@ -103,6 +108,24 @@ def chloe_push(dest_x, dest_y):
   box.set_y(dest_y)
   n.set_ling_jump(False)
   c.set_placing_box(False)
+
+def probie_move(x_inc, y_inc):
+  x = p.get_x() + x_inc
+  y = p.get_y() + y_inc
+  while is_in_bounds(x, y) and can_move_to(x, y) == "true":
+    x += x_inc
+    y += y_inc
+  x_final = x - x_inc
+  y_final = y - y_inc
+
+  occupied.remove([p.get_x(), p.get_y()])
+  occupied.append([x_final, y_final])
+  if curr_stage[p.get_y()][p.get_x()] in button_list:
+    active_buttons.remove(curr_stage[p.get_y()][p.get_x()])
+  if curr_stage[y_final][x_final] in button_list:
+    active_buttons.append(curr_stage[y_final][x_final])
+  p.set_x(x_final)
+  p.set_y(y_final)
 
 
 
@@ -188,15 +211,18 @@ class Box:
   def set_placed(self, val):
     self.placed = val
 
-
+curr_level = level_01
+curr_stage = curr_level.copy()
 
 c = Player(0, 0, "c", True, chloe_img, chloe_select_img, True)
 p = Player(1, 0, "p", False, probie_img, probie_select_img, False)
 n = Player(1, 1, "n", False, natalie_img, natalie_select_img, False)
-box = Box(0, 0)
-
-curr_level = level_01
-curr_stage = curr_level.copy()
+box = Box(0, 0, False)
+baby = Box(4,5, True)
+#deal with spawning on buttons xxxx
+if curr_stage[baby.get_y()][baby.get_x()] in button_list:
+  active_buttons.append(curr_stage[baby.get_y()][baby.get_x()])
+occupied.append([baby.get_x(), baby.get_y()])
 
 for [row_num, row] in enumerate(curr_stage):
   for [col_num, ele] in enumerate(row):
@@ -249,22 +275,30 @@ while running:
         running = False
     if event.type == pygame.KEYDOWN:
       if event.key == pygame.K_LEFT:
-        if x_int > move_val - 1 and can_move_to(x_int - move_val, y_int) == 'true':
+        if p.is_selected():
+          probie_move(-1, 0)
+        elif x_int > move_val - 1 and can_move_to(x_int - move_val, y_int) == 'true':
           movement(x_int, y_int, x_int - move_val, y_int)
         elif x_int > 1 and can_move_to(x_int - 1, y_int) == 'push box' and can_move_to(x_int - 2, y_int) == 'true':
           chloe_push(x_int - 2, y_int) 
       elif event.key == pygame.K_UP:
-        if y_int > move_val - 1 and can_move_to(x_int, y_int - move_val) == 'true':
+        if p.is_selected():
+          probie_move(0, -1)
+        elif y_int > move_val - 1 and can_move_to(x_int, y_int - move_val) == 'true':
           movement(x_int, y_int, x_int, y_int - move_val)
         elif y_int > 1 and can_move_to(x_int, y_int - 1) == 'push box' and can_move_to(x_int, y_int - 2) == 'true':
           chloe_push(x_int, y_int - 2) 
       elif event.key == pygame.K_RIGHT:
-        if x_int < len(curr_stage[0]) - move_val and can_move_to(x_int + move_val, y_int) == 'true':
+        if p.is_selected():
+          probie_move(1, 0)
+        elif x_int < len(curr_stage[0]) - move_val and can_move_to(x_int + move_val, y_int) == 'true':
           movement(x_int, y_int, x_int + move_val, y_int)
         elif x_int < len(curr_stage[0]) - 2 and can_move_to(x_int + 1, y_int) == 'push box' and can_move_to(x_int + 2, y_int) == 'true':
           chloe_push(x_int + 2, y_int) 
       elif event.key == pygame.K_DOWN:
-        if y_int < len(curr_stage) - move_val and can_move_to(x_int, y_int + move_val) == 'true':
+        if p.is_selected():
+          probie_move(0, 1)
+        elif y_int < len(curr_stage) - move_val and can_move_to(x_int, y_int + move_val) == 'true':
           movement(x_int, y_int, x_int, y_int + move_val)
         elif y_int < len(curr_stage) - 2 and can_move_to(x_int, y_int + 1) == 'push box' and can_move_to(x_int, y_int + 2) == 'true':
           chloe_push(x_int, y_int + 2) 
@@ -288,6 +322,13 @@ while running:
           n.set_ling_jump(not n.is_ling_jump())
         elif c.is_selected() and c.has_box():
           c.set_placing_box(not c.is_placing_box())
+        elif p.is_selected():
+          x = p.get_x()
+          y = p.get_y()
+          p.set_x(baby.get_x())
+          p.set_y(baby.get_y())
+          baby.set_x(x)
+          baby.set_y(y)
       elif event.key == pygame.K_r:
         pass
       elif event.key == pygame.K_a:
@@ -340,6 +381,7 @@ while running:
   screen.blit(n.get_img(), (n.get_x() * size, n.get_y() * size))
   if box.is_placed():
     screen.blit(box_img, (box.get_x() * size, box.get_y() * size))
+  screen.blit(baby_img, (baby.get_x() * size, baby.get_y() * size))
 
 
 
