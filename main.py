@@ -3,7 +3,6 @@ from level_data.level_01 import level_01
 
 # things to fix marked with xxxx
 
-# chloe push box
 # probie swap
 # probie fling
 # special rotation
@@ -59,7 +58,7 @@ move_val = 1
 def can_move_to (move_x, move_y):
   if curr_stage[move_y][move_x] in can_move and [move_x, move_y] not in occupied:
     return "true"
-  elif box.get_x() == move_x and box.get_y() == move_y:
+  elif c.is_selected() and box.get_x() == move_x and box.get_y() == move_y:
     return "push box"
   else:
     return "false"
@@ -95,10 +94,7 @@ def chloe_push(dest_x, dest_y):
     active_buttons.remove(curr_stage[c.get_y()][c.get_x()])
   if curr_stage[dest_y][dest_x] in button_list:
     active_buttons.append(curr_stage[dest_y][dest_x])
-  print(occupied)
   occupied.remove([c.get_x(), c.get_y()])
-  print(occupied)
-  print("done")
   occupied.append([dest_x, dest_y])
 
   c.set_x(box.get_x())
@@ -295,7 +291,7 @@ while running:
       elif event.key == pygame.K_r:
         pass
       elif event.key == pygame.K_a:
-        print(occupied)
+        pass
 
 
   # screen.blit(floor_tile_01, (0,0))
