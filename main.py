@@ -4,9 +4,7 @@ from level_data.level_01 import level_01
 # things to fix marked with xxxx
 
 
-# probie move
 # probie move animation
-# special rotation
 # add more gates
 # make some levels
 # redo player sprites
@@ -126,6 +124,24 @@ def probie_move(x_inc, y_inc):
     active_buttons.append(curr_stage[y_final][x_final])
   p.set_x(x_final)
   p.set_y(y_final)
+
+def highest(a, b):
+  if a.get_y() < b.get_y():
+    return a
+  elif a.get_y() == b.get_y():
+    if a.get_x() < b.get_x():
+      return a
+  
+  return b
+
+def lowest(a, b):
+  if a.get_y() > b.get_y():
+    return a
+  elif a.get_y() == b.get_y():
+    if a.get_x() > b.get_x():
+      return a
+
+  return b
 
 
 
@@ -303,20 +319,22 @@ while running:
         elif y_int < len(curr_stage) - 2 and can_move_to(x_int, y_int + 1) == 'push box' and can_move_to(x_int, y_int + 2) == 'true':
           chloe_push(x_int, y_int + 2) 
       elif event.key == pygame.K_LCTRL:
-        if c.is_selected():
-          c.set_selected(False)
-          p.set_selected(True)
-          s_p = p
-        elif p.is_selected():
-          p.set_selected(False)
-          n.set_selected(True)
-          s_p = n
+
+        high = highest(c, highest(p, n))
+        low = lowest(c, lowest(p, n))
+        if s_p.get_name() == high.get_name():
+          s_p.set_selected(False)
+          low.set_selected(True)
+          s_p = low
         else:
-          n.set_selected(False)
-          c.set_selected(True)
-          s_p = c
+          s_p.set_selected(False)
+          high.set_selected(True)
+          s_p = high
+
         n.set_ling_jump(False)
         c.set_placing_box(False)
+
+        pass
       elif event.key == pygame.K_k:
         if n.is_selected():
           n.set_ling_jump(not n.is_ling_jump())

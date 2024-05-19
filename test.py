@@ -1,10 +1,16 @@
-a = [
-  [1, 2, 3],
-  [4, 5, 6],
-  [7, 8, 9]
-]
+class Player:
+  def __init__(self, score, name):
+    self.score = score
+    self.name = name
 
-b = a.copy()
-b[0] = [11,12,13]
-print(a)
-print(b)
+
+chloe = Player(1, "chloe")
+probie = Player(2, "probie")
+natalie = Player(3, "natalie")
+
+def highest(a, b):
+  return b
+
+high = highest(chloe, highest(probie, natalie))
+print(high)
+print(high.name)
