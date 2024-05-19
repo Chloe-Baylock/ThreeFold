@@ -25,6 +25,7 @@ running = True
 size = 48
 wall = pygame.image.load('images/wall.png')
 floor = pygame.image.load('images/floor.png')
+goal = pygame.image.load('images/goal.png')
 
 natalie_img = pygame.image.load('images/player/natalie.png')
 natalie_select_img = pygame.image.load('images/player/natalie_select.png')
@@ -44,11 +45,11 @@ roboh = pygame.image.load('images/robo_horgate.png')
 red_button = pygame.image.load('images/red_button.png')
 blue_button = pygame.image.load('images/blue_button.png')
 
-my_font = pygame.font.SysFont("Roboto", 30)
-text_surface = my_font.render("Level " + level_01[0][0], False, (155,155,155))
+# my_font = pygame.font.SysFont("Roboto", 30)
+# text_surface = my_font.render("Level " + level_01[0][0], False, (155,155,155))
 
 button_list = ["red", "blu", "gre"]
-can_move = ["-  ", "red", "blu", "gre", "roboh"]
+can_move = ["-  ","g  ", "red", "blu", "gre", "roboh"]
 occupied = []
 active_buttons = []
 
@@ -365,6 +366,8 @@ while running:
       match ele:
         case '-  ':
           screen.blit(floor, dest_size)
+        case 'g  ':
+          screen.blit(goal, dest_size)
         case 'l  ':
           screen.blit(wall, dest_size)
         case 'c  ':
